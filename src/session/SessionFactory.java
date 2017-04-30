@@ -9,6 +9,8 @@ import java.net.URLConnection;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import keystore.Keystore;
 
 public class SessionFactory {
@@ -17,15 +19,14 @@ public class SessionFactory {
 	 * This class is meant to generate startSessionions from a static perspective,
 	 * therefore, it cannot be instantiated.
 	 */
-	private SessionFactory() {
-	}
+	private SessionFactory() {}
 
 	/**
 	 * startSession an un-authenticated session.
 	 * @return 
 	 */
 	public static Session startSession() {
-		return startSession((BasicAuthentication) null, (Keystore) null);
+		return new Session();
 	}
 
 	/**
@@ -36,7 +37,7 @@ public class SessionFactory {
 	 *            Credential object for authenticating with source
 	 * @return 
 	 */
-	private static Session startSession(BasicAuthentication credentials) {
+	private static SecureSession startSession(BasicAuthentication credentials) {
 		return startSession(credentials, Keystore.DEFAULT_KEYSTORE);
 	}
 
@@ -47,7 +48,7 @@ public class SessionFactory {
 	 * @param password
 	 * @return 
 	 */
-	public static Session startSession(String password) {
+	public static SecureSession startSession(String password) {
 		return startSession(new BasicAuthentication(password));
 	}
 
@@ -59,28 +60,8 @@ public class SessionFactory {
 	 * @param password
 	 * @return 
 	 */
-	public static Session startSession(String usernname, String password) {
+	public static SecureSession startSession(String usernname, String password) {
 		return startSession(new BasicAuthentication(usernname, password));
-	}
-
-	/**
-	 * startSession an authenticated session without username and password.
-	 * 
-	 * @param keystore
-	 * @return 
-	 */
-	public static Session startSession(Keystore keystore) {
-		return startSession((BasicAuthentication) null, keystore);
-	}
-
-	/**
-	 * startSession an authenticated session without username and password.
-	 * 
-	 * @param keystore
-	 * @return 
-	 */
-	public static Session startSession(File keystore) {
-		return startSession(new Keystore(keystore));
 	}
 	
 	/*
@@ -95,8 +76,8 @@ public class SessionFactory {
 	 * @param keystore
 	 * @return 
 	 */
-	private static Session startSession(BasicAuthentication credentials, Keystore keystore) {
-		return new Session(credentials,keystore);
+	private static SecureSession startSession(BasicAuthentication credentials, Keystore keystore) {
+		return new SecureSession(credentials,keystore);
 	}
 
 	/**
@@ -108,7 +89,7 @@ public class SessionFactory {
 	 * @param keystore
 	 * @return 
 	 */
-	public static Session startSession(String username, String password, Keystore keystore) {
+	public static SecureSession startSession(String username, String password, Keystore keystore) {
 		return startSession(new BasicAuthentication(username, password), keystore);
 	}
 
@@ -119,7 +100,7 @@ public class SessionFactory {
 	 * @param password
 	 * @param keystore
 	 */
-	public static Session startSession(String password, Keystore keystore) {
+	public static SecureSession startSession(String password, Keystore keystore) {
 		return startSession(new BasicAuthentication(password), keystore);
 	}
 
@@ -131,7 +112,7 @@ public class SessionFactory {
 	 *            Credential object for authenticating with source
 	 * @param keystore
 	 */
-	private static Session startSession(BasicAuthentication credentials, File keystore) {
+	private static SecureSession startSession(BasicAuthentication credentials, File keystore) {
 		return startSession(credentials, new Keystore(keystore));
 	}
 
@@ -143,7 +124,7 @@ public class SessionFactory {
 	 * @param password
 	 * @param keystore
 	 */
-	public static Session startSession(String username, String password, File keystore) {
+	public static SecureSession startSession(String username, String password, File keystore) {
 		return startSession(new BasicAuthentication(username, password), keystore);
 	}
 
@@ -154,7 +135,7 @@ public class SessionFactory {
 	 * @param password
 	 * @param keystore
 	 */
-	public static Session startSession(String password, File keystore) {
+	public static SecureSession startSession(String password, File keystore) {
 		return startSession(new BasicAuthentication(password), keystore);
 	}
 
@@ -167,7 +148,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	private static Session startSession(BasicAuthentication credentials, File certificate, String alias) {
+	private static SecureSession startSession(BasicAuthentication credentials, File certificate, String alias) {
 		return startSession(credentials, Keystore.DEFAULT_KEYSTORE, certificate, alias);
 	}
 
@@ -180,7 +161,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	public static Session startSession(String username, String password, File certificate, String alias) {
+	public static SecureSession startSession(String username, String password, File certificate, String alias) {
 		return startSession(new BasicAuthentication(username, password), certificate, alias);
 	}
 
@@ -192,7 +173,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	public static Session startSession(String password, File certificate, String alias) {
+	public static SecureSession startSession(String password, File certificate, String alias) {
 		return startSession(new BasicAuthentication(password), certificate, alias);
 	}
 
@@ -207,7 +188,7 @@ public class SessionFactory {
 	 * @param alias
 	 * @return 
 	 */
-	private static Session startSession(BasicAuthentication credentials, Keystore keystore, File certificate, String alias) {
+	private static SecureSession startSession(BasicAuthentication credentials, Keystore keystore, File certificate, String alias) {
 		try {
 			keystore.addCertificate(certificate, alias);
 		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
@@ -226,7 +207,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	public static Session startSession(String username, String password, Keystore keystore, File certificate, String alias) {
+	public static SecureSession startSession(String username, String password, Keystore keystore, File certificate, String alias) {
 		return startSession(new BasicAuthentication(username, password), keystore, certificate, alias);
 	}
 
@@ -239,7 +220,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	public static Session startSession(String password, Keystore keystore, File certificate, String alias) {
+	public static SecureSession startSession(String password, Keystore keystore, File certificate, String alias) {
 		return startSession(new BasicAuthentication(password),keystore,certificate,alias);
 	}
 
@@ -253,7 +234,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	private static Session startSession(BasicAuthentication credentials, File keystore, File certificate, String alias) {
+	private static SecureSession startSession(BasicAuthentication credentials, File keystore, File certificate, String alias) {
 		return startSession(credentials, new Keystore(keystore), certificate, alias);
 	}
 	
@@ -267,7 +248,7 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	public static Session startSession(String username, String password, File keystore, File certificate, String alias){
+	public static SecureSession startSession(String username, String password, File keystore, File certificate, String alias){
 		return startSession(new BasicAuthentication(username,password),keystore,certificate,alias);
 	}
 	
@@ -280,22 +261,13 @@ public class SessionFactory {
 	 * @param certificate
 	 * @param alias
 	 */
-	public static Session startSession(String password, File keystore, File certificate, String alias){
+	public static SecureSession startSession(String password, File keystore, File certificate, String alias){
 		return startSession(new BasicAuthentication(password),keystore,certificate,alias);
 	}
 
 	public static void main(String...args) throws MalformedURLException, IOException{
 		Session session = SessionFactory.startSession();
-		URLConnection conn = session.getConnection("https://jira.atlassian.com/rest/api/latest/issue/JRACLOUD-62622");
-		
-		BufferedReader reader = null;
-		reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		
-		String line = null;
-		String content = "";
-		while((line = reader.readLine()) != null){
-			content += line;
-		}
-		System.out.println(content);
+		SessionConnection conn = session.getConnection("https://jira.atlassian.com/rest/api/latest/issue/JRACLOUD-62622");
+		conn.printResponse();
 	}
 }

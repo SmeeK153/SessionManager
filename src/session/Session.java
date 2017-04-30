@@ -12,56 +12,34 @@ import keystore.Keystore;
 
 public final class Session {
 
-	private Keystore keystore = null;
-	private HttpsURLConnection connection = null;
-	private BasicAuthentication credentials = null;
-	
 	/**
-	 * Create a new session without credentials, and with the defaul keystore.
+	 * Create a session without credentials or a keystore.
 	 */
-	private Session(){
-		this.credentials = null;
-		this.keystore = Keystore.DEFAULT_KEYSTORE;
-	};
-	
-	/**
-	 * Create a new session with the provided credentials and keystore to use.
-	 * 
-	 * @param credentials
-	 * @param keystore
-	 */
-	protected Session(BasicAuthentication credentials, Keystore keystore) {
-		this.credentials = credentials;
-		this.keystore = keystore;
-	}
+	protected Session(){};
 
 	// Add exceptions to throw if the connection needs authentication parameter
 	// or an SSL certificate
-	public URLConnection getConnection(URL url) throws IOException {
-		URLConnection connection = url.openConnection();
-		return connection;
+	/**
+	 * Provides a connection to the desired resource.
+	 * 
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
+	public SessionConnection getConnection(URL url) throws IOException {
+		return new SessionConnection(url);
 	}
-
-	public URLConnection getConnection(String url) throws MalformedURLException, IOException {
+	
+	/**
+	 * Provides a connection to the desired resource.
+	 * 
+	 * @param url
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	public SessionConnection getConnection(String url) throws MalformedURLException, IOException {
 		return this.getConnection(new URL(url));
 	}
 
-	// Add exceptions to throw if the connection needs authentication parameter
-	// or an SSL certificate
-	public HttpsURLConnection getSecureConnection(URL url) throws IOException {
-
-		// Make sure that a keystore is selected regardless
-		if (this.keystore == null) {
-			this.keystore = Keystore.DEFAULT_KEYSTORE;
-		}
-
-		HttpsURLConnection connection = (HttpsURLConnection) this.getConnection(url);
-		connection.setSSLSocketFactory(this.keystore.getSSLSocketFactory());
-		connection.setRequestProperty("Authorization", this.credentials.getAuthenticationParameter());
-		return connection;
-	}
-
-	public HttpsURLConnection getSecureConnection(String url) throws MalformedURLException, IOException {
-		return this.getSecureConnection(new URL(url));
-	}
 }
