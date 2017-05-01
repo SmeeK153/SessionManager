@@ -32,7 +32,7 @@ public class SessionConnection {
 	 * @param method
 	 * @return
 	 */
-	private static String getRequestMethod(REQUEST_METHOD method) {
+	protected static String getRequestMethod(REQUEST_METHOD method) {
 		switch (method) {
 		case GET:
 			return "GET";
@@ -62,7 +62,7 @@ public class SessionConnection {
 	 * @return
 	 * @throws IOException
 	 */
-	private HttpsURLConnection getNewConnection() throws IOException{
+	protected HttpsURLConnection getNewConnection() throws IOException{
 		return (HttpsURLConnection) this.url.openConnection();
 	}
 	
@@ -177,4 +177,5 @@ public class SessionConnection {
 	public JSONArray getJSONArrayResponse(REQUEST_METHOD requestMethod, String jsonParameters) throws IOException, JSONException {
 		return new JSONArray(this.getResponse(requestMethod,jsonParameters));
 	}
+
 }

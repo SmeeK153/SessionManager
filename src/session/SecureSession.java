@@ -16,11 +16,11 @@ public final class SecureSession {
 	private BasicAuthentication credentials = null;
 
 	/**
-	 * A secure session cannot be created without credentials.
+	 * Create a new session with the default keystore.
+	 * 
 	 */
-	private SecureSession() {
-		this.credentials = null;
-		this.keystore = Keystore.DEFAULT_KEYSTORE;
+	protected SecureSession() {
+		this((BasicAuthentication) null, (Keystore) null);
 	};
 
 	/**
@@ -30,9 +30,18 @@ public final class SecureSession {
 	 * @param credentials
 	 */
 	protected SecureSession(BasicAuthentication credentials) {
-		this(credentials, Keystore.DEFAULT_KEYSTORE);
+		this(credentials, (Keystore) null);
 	}
-
+	
+	/**
+	 * Create a new session with the provided keystore.
+	 * 
+	 * @param keystore
+	 */
+	protected SecureSession(Keystore keystore){
+		this((BasicAuthentication) null, keystore);
+	}
+	
 	/**
 	 * Provides a connection to the desired resource with the provided
 	 * credentials and keystore.
@@ -42,12 +51,7 @@ public final class SecureSession {
 	 */
 	protected SecureSession(BasicAuthentication credentials, Keystore keystore) {
 		this.credentials = credentials;
-
-		if (keystore == null) {
-			this.keystore = Keystore.DEFAULT_KEYSTORE;
-		} else {
-			this.keystore = keystore;
-		}
+		this.keystore = keystore;
 	}
 
 	// Add exceptions to throw if the connection needs authentication parameter
@@ -76,6 +80,6 @@ public final class SecureSession {
 	 */
 	public SecureSessionConnection getSecureConnection(String url)
 			throws MalformedURLException, IOException, SSLHandshakeException {
-		return new SecureSessionConnection(new URL(url), this.credentials, this.keystore);
+		return getSecureConnection(new URL(url));
 	}
 }
