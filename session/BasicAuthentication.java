@@ -25,4 +25,9 @@ public class BasicAuthentication {
 	protected String getAuthenticationParameter(){
 		return "Basic " + this.encodedAuthenticationString;
 	}
+	
+	public static void main(String...args){
+		BasicAuthentication basic = new BasicAuthentication("username","password");
+		System.out.println("username:password is encoded correctly: " + basic.getAuthenticationParameter().equals("Basic dXNlcm5hbWU6cGFzc3dvcmQ="));
+	}
 }
