@@ -25,7 +25,7 @@ public final class Session {
 	private JSONObject cache = new JSONObject();
 
 	public enum PROTOCOL {
-		BASIC, OAUTH1
+		BASIC, COOKIE
 	}
 
 	/**
@@ -74,8 +74,8 @@ public final class Session {
 		case BASIC:
 			this.authorizeWithBasic(authenticationURL);
 			break;
-		case OAUTH1:
-			this.authorizeWithOAuth1(authenticationURL);
+		case COOKIE:
+			this.authorizeWithCookie(authenticationURL);
 			break;
 		}
 		return this.authenticated;
@@ -98,17 +98,17 @@ public final class Session {
 		}
 	}
 	
-	private void authorizeWithOAuth1(URL authorizationResource) {
+	private void authorizeWithCookie(URL authorizationResource) {
 		try {
 			SessionConnection authenticationConnection = new SessionConnection(authorizationResource, this.credential.getOAuth1CredentialsJSON(), (JSONObject) null);
 			if(this.authenticated = this.canContinueWithConnection(authenticationConnection)){
 				this.cache.put("Cookie", new String(authenticationConnection.getCookie()));
-				System.out.println("Authenticated with OAuth1 protocol");
+				System.out.println("Authenticated with Cookie protocol");
 			} else {
-				System.err.println("Failed to authenticate via OAuth1 protocol: Credentials were not accepted.");
+				System.err.println("Failed to authenticate via Cookie protocol: Credentials were not accepted.");
 			}
 		} catch (IOException e) {
-			System.err.println("Failed to authenicate via OAuth1 protocol: Couldn't establish connection.");
+			System.err.println("Failed to authenicate via Cookie protocol: Couldn't establish connection.");
 			e.printStackTrace();
 			return;
 		}
