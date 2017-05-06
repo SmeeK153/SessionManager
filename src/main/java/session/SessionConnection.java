@@ -4,7 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -12,12 +17,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SessionConnection {
-	protected URL url;
+import core.StreamBuffer;
+import keystore.Keystore;
+import session.Session.PROTOCOL;
 
-	protected SessionConnection(URL url) {
-		this.url = url;
-	}
+public class SessionConnection {
 
 	/**
 	 * Supported request methods types GET is the default assumed when ambiguous
@@ -32,7 +36,7 @@ public class SessionConnection {
 	 * @param method
 	 * @return
 	 */
-	protected static String getRequestMethod(REQUEST_METHOD method) {
+	private static String getRequestMethod(REQUEST_METHOD method) {
 		switch (method) {
 		case GET:
 			return "GET";
@@ -57,127 +61,243 @@ public class SessionConnection {
 		}
 
 	}
-	
+
+	private Credential credential;
+	private Keystore keystore;
+
+	private PROTOCOL authenticationProtocol = null;
+	private HttpsURLConnection connection = null;
+
+	private String responseContent;
+	private String responseError;
+	private Integer serverResponseCode;
+	private String serverResponseMessage;
+	private String cookie;
+
+	protected SessionConnection(URL url, JSONObject requestBody, JSONObject requestProperties) throws IOException {
+		this(url, requestBody, requestProperties, REQUEST_METHOD.GET, (Keystore) null);
+	}
+
+	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestProperties, Keystore keystore)
+			throws IOException {
+		this(url, requestData, requestProperties, REQUEST_METHOD.GET, keystore);
+	}
+
+	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestProperties,
+			REQUEST_METHOD requestMethod) throws IOException {
+		this(url, requestData, requestProperties, requestMethod, (Keystore) null);
+	}
+
+	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestProperties,
+			REQUEST_METHOD requestMethod, Keystore keystore) throws IOException {
+		System.out.println("\n");
+		
+		this.connection = (HttpsURLConnection) url.openConnection();
+		System.out.println("Established connection with: " + url.toString());
+		this.connection.setInstanceFollowRedirects(true);
+		System.out.println("Setting up automatic redirects.");
+		this.setRequestProperty(requestProperties);
+		
+		if(requestData == null){
+			this.setRequestMethod(requestMethod);
+		} else {
+			this.setRequestBody(requestData);
+		}
+		
+		System.out.println("Request was successfully prepared.");
+		this.responseContent = StreamBuffer.read(this.connection.getInputStream());
+		System.out.println("Successfully connected to resource...");
+		System.out.println("Retrieved request response.");
+		try {
+			this.responseError = StreamBuffer.read(this.connection.getErrorStream());
+			System.out.println("Retrieved request error.");
+		} catch (NullPointerException e) {
+			System.out.println("The request did not provide an error stream to read.");
+		}
+		this.serverResponseCode = this.connection.getResponseCode();
+		System.out.println("Retrieved server response code.");
+		this.serverResponseMessage = this.connection.getResponseMessage();
+		System.out.println("Retrieved server response message.");
+		this.cookie = this.connection.getHeaderField("Set-Cookie");
+		System.out.println("Retrieved request cookie.");
+	}
+
+	/**
+	 * Sets the request's keystore resource for authentication
+	 * 
+	 * @param keystore
+	 *            Keystore
+	 */
+	private void setKeystore(Keystore keystore) {
+		if (keystore == null) {
+			System.out.println("Set keystore resources to null.");
+			return;
+		} else {
+			System.out.println("Using provided keystore resources.");
+			this.connection.setSSLSocketFactory(keystore.getSSLSocketFactory());
+		}
+	}
+
+	/**
+	 * Sets the request's data payload
+	 * 
+	 * @param requestData
+	 *            JSONObject
+	 * @throws IOException
+	 *             Thrown if the connection cannot be established
+	 */
+	private void setRequestBody(JSONObject requestData) throws IOException {
+		if (requestData == null) {
+			System.out.println("No request data provided.");
+			return;
+		}
+
+		this.setRequestProperty("Content-Type", "application/json");
+		this.setRequestProperty("Accept", "application/json");
+		this.connection.setDoOutput(true);
+		StreamBuffer.write(this.connection.getOutputStream(), requestData.toString());
+		System.out.println("Request body data added.");
+	}
+
+	/**
+	 * Sets the request's properties from a JSON
+	 * 
+	 * @param requestProperties
+	 *            JSONObject
+	 */
+	private void setRequestProperty(JSONObject requestProperties) {
+		if (requestProperties == null) {
+			return;
+		}
+
+		Iterator<String> keys = requestProperties.keys();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			this.setRequestProperty(key, requestProperties.getString(key));
+		}
+	}
+
+	/**
+	 * Sets each individual request property
+	 * 
+	 * @param property
+	 *            Request property
+	 * @param value
+	 *            Request property value
+	 */
+	private void setRequestProperty(String property, String value) {
+		this.connection.setRequestProperty(property, value);
+		System.out.println("Set request property: " + property);
+	}
+
+	/**
+	 * Sets the request method type to be used
+	 * 
+	 * @param requestMethod
+	 *            REQUEST_METHOD
+	 */
+	private void setRequestMethod(REQUEST_METHOD requestMethod) {
+		String method = this.getRequestMethod(requestMethod);
+
+		try {
+			System.out.println("Setting request method to: " + method);
+			this.connection.setRequestMethod(method);
+		} catch (ProtocolException e) {
+			System.err.println("Request method " + method + "failed, falling back to GET");
+			this.setRequestMethod(REQUEST_METHOD.GET);
+			e.printStackTrace();
+		}
+	}
+
+	protected String getCookie() {
+		return this.cookie;
+	}
+
+	protected Integer getServerResponseCode() {
+		return this.serverResponseCode;
+	}
+
+	protected String getServerResponseMessage() {
+		return this.serverResponseMessage;
+	}
+
+	protected String getServerResponseVerboseMessage() {
+		return this.getServerResponseCode() + " : " + this.getServerResponseMessage();
+	}
+
 	/**
 	 * Creates an un-authenticated HTTPS connection
 	 * 
 	 * @return
 	 * @throws IOException
 	 */
-	protected HttpsURLConnection getNewConnection() throws IOException{
-		return (HttpsURLConnection) this.url.openConnection();
-	}
-	
-	public void printResponse() {
-		try {
-			System.out.println(this.getResponse());
-		} catch (IOException e) {
-			System.err.println("An error occurred, cannot print out response.");
-			e.printStackTrace();
-		}
-	}
+	// private HttpsURLConnection getNewConnection() throws IOException {
+	// return (HttpsURLConnection) this.url.openConnection();
+	// }
 
-	public String getResponse() throws IOException {
-		return this.getResponse(REQUEST_METHOD.GET);
-	}
-
-	public String getResponse(REQUEST_METHOD requestMethod) throws IOException {
-		return this.getResponse(requestMethod, (JSONObject) null);
-	}
-
-	public String getResponse(JSONObject jsonParameters) throws IOException {
-		return this.getResponse(REQUEST_METHOD.GET, jsonParameters);
-	}
-
-	public String getResponse(String jsonParameters) throws IOException, JSONException {
-		return this.getResponse(REQUEST_METHOD.GET, new JSONObject(jsonParameters));
-	}
-	
 	/*
 	 * All calls converge on this method
 	 */
-	
-	public String getResponse(REQUEST_METHOD requestMethod, JSONObject jsonParameters) throws IOException {
-		HttpsURLConnection connection = this.getNewConnection();
 
-		connection.setRequestMethod(SessionConnection.getRequestMethod(requestMethod));
-		connection.setInstanceFollowRedirects(true);
+	protected String getResponse() {
+		// HttpsURLConnection connection = this.getNewConnection();
+		//
+		// connection.setRequestMethod(SessionConnection.getRequestMethod(requestMethod));
+		// connection.setInstanceFollowRedirects(true);
+		//
+		// if (this.authenticationProtocol != null) {
+		// switch (this.authenticationProtocol) {
+		// case BASIC:
+		// if (this.credential != null) {
+		// credential.setBasicAuthenticationParameter(connection);
+		// }
+		// break;
+		// case OAUTH1:
+		// if (this.cookie != null) {
+		// connection.setRequestProperty("cookie", cookie);
+		// }
+		// break;
+		// // case OAUTH2:
+		// // System.err.println("OAuth2 is not currently supported.");
+		// // break;
+		// }
+		// }
+		//
+		// if (this.keystore != null) {
+		// connection.setSSLSocketFactory(keystore.getSSLSocketFactory());
+		// }
+		//
+		// if (jsonParameters != null) {
+		// connection.setDoOutput(true);
+		// connection.setRequestProperty("Content-Type", "application/json");
+		// connection.setRequestProperty("Accept", "application/json");
+		// OutputStreamWriter writer = new
+		// OutputStreamWriter(connection.getOutputStream());
+		// writer.write(jsonParameters.toString());
+		// writer.close();
+		// }
 
-		if (jsonParameters != null) {
-			connection.setDoOutput(true);
-			connection.setRequestProperty("Content-Type", "application/json");
-			connection.setRequestProperty("Accept", "application/json");
-			OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-			writer.write(jsonParameters.toString());
-			writer.close();
-		}
+		return this.responseContent;
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-		String line = null;
-		String response = "";
-		while ((line = reader.readLine()) != null) {
-			response += line;
-		}
-		return response;
+		// BufferedReader reader = new BufferedReader(new
+		// InputStreamReader(connection.getInputStream()));
+		// String line = null;
+		// String response = "";
+		// while ((line = reader.readLine()) != null) {
+		// response += line;
+		// }
+		// return response;
 	}
 
-	public String getResponse(REQUEST_METHOD requestMethod, String jsonParameters) throws IOException, JSONException {
-		return this.getResponse(requestMethod, new JSONObject(jsonParameters));
+	public void printResponse() {
+		System.out.println(this.getResponse());
 	}
 
-	
-	
-	
 	public JSONObject getJSONObjectResponse() throws IOException, JSONException {
 		return new JSONObject(this.getResponse());
 	}
 
-	public JSONObject getJSONObjectResponse(REQUEST_METHOD requestMethod) throws IOException, JSONException {
-		return new JSONObject(this.getResponse(requestMethod));
-	}
-
-	public JSONObject getJSONObjectResponse(JSONObject jsonParameters) throws IOException, JSONException {
-		return new JSONObject(this.getResponse(jsonParameters));
-	}
-
-	public JSONObject getJSONObjectResponse(String jsonParameters) throws IOException, JSONException {
-		return new JSONObject(this.getResponse(jsonParameters));
-	}
-
-	public JSONObject getJSONObjectResponse(REQUEST_METHOD requestMethod, JSONObject jsonParameters)
-			throws IOException, JSONException {
-		return new JSONObject(this.getResponse(requestMethod, jsonParameters));
-	}
-
-	public JSONObject getJSONObjectResponse(REQUEST_METHOD requestMethod, String jsonParameters)
-			throws IOException, JSONException {
-		return new JSONObject(this.getResponse(requestMethod, jsonParameters));
-	}
-
-	
-	
 	public JSONArray getJSONArrayResponse() throws IOException, JSONException {
 		return new JSONArray(this.getResponse());
 	}
-	
-	public JSONArray getJSONArrayResponse(REQUEST_METHOD requestMethod) throws IOException, JSONException {
-		return new JSONArray(this.getResponse(requestMethod));
-	}
-
-	public JSONArray getJSONArrayResponse(JSONObject jsonParameters) throws IOException, JSONException {
-		return new JSONArray(this.getResponse(jsonParameters));
-	}
-
-	public JSONArray getJSONArrayResponse(String jsonParameters) throws IOException, JSONException {
-		return new JSONArray(this.getResponse(jsonParameters));
-	}
-
-	public JSONArray getJSONArrayResponse(REQUEST_METHOD requestMethod, JSONObject jsonParameters) throws IOException, JSONException {
-		return new JSONArray(this.getResponse(requestMethod,jsonParameters));
-	}
-
-	public JSONArray getJSONArrayResponse(REQUEST_METHOD requestMethod, String jsonParameters) throws IOException, JSONException {
-		return new JSONArray(this.getResponse(requestMethod,jsonParameters));
-	}
-
 }
