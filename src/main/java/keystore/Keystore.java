@@ -340,9 +340,4 @@ public class Keystore {
 		
 		this.systemKeystore.store(this.getKeystoreOutputStream(), this.keystorePassword);
 	}
-	
-	public static void main(String...args) throws NoSuchAlgorithmException, CertificateException, IOException{
-		Keystore kstore = Keystore.DEFAULT_KEYSTORE;
-		kstore.addCertificate("test");
-	}
 }

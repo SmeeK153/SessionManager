@@ -225,68 +225,8 @@ public class SessionConnection {
 		return this.getServerResponseCode() + " : " + this.getServerResponseMessage();
 	}
 
-	/**
-	 * Creates an un-authenticated HTTPS connection
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	// private HttpsURLConnection getNewConnection() throws IOException {
-	// return (HttpsURLConnection) this.url.openConnection();
-	// }
-
-	/*
-	 * All calls converge on this method
-	 */
-
 	protected String getResponse() {
-		// HttpsURLConnection connection = this.getNewConnection();
-		//
-		// connection.setRequestMethod(SessionConnection.getRequestMethod(requestMethod));
-		// connection.setInstanceFollowRedirects(true);
-		//
-		// if (this.authenticationProtocol != null) {
-		// switch (this.authenticationProtocol) {
-		// case BASIC:
-		// if (this.credential != null) {
-		// credential.setBasicAuthenticationParameter(connection);
-		// }
-		// break;
-		// case OAUTH1:
-		// if (this.cookie != null) {
-		// connection.setRequestProperty("cookie", cookie);
-		// }
-		// break;
-		// // case OAUTH2:
-		// // System.err.println("OAuth2 is not currently supported.");
-		// // break;
-		// }
-		// }
-		//
-		// if (this.keystore != null) {
-		// connection.setSSLSocketFactory(keystore.getSSLSocketFactory());
-		// }
-		//
-		// if (jsonParameters != null) {
-		// connection.setDoOutput(true);
-		// connection.setRequestProperty("Content-Type", "application/json");
-		// connection.setRequestProperty("Accept", "application/json");
-		// OutputStreamWriter writer = new
-		// OutputStreamWriter(connection.getOutputStream());
-		// writer.write(jsonParameters.toString());
-		// writer.close();
-		// }
-
 		return this.responseContent;
-
-		// BufferedReader reader = new BufferedReader(new
-		// InputStreamReader(connection.getInputStream()));
-		// String line = null;
-		// String response = "";
-		// while ((line = reader.readLine()) != null) {
-		// response += line;
-		// }
-		// return response;
 	}
 
 	public void printResponse() {
