@@ -340,4 +340,19 @@ public class Keystore {
 		
 		this.systemKeystore.store(this.getKeystoreOutputStream(), this.keystorePassword);
 	}
+	
+	public Boolean hostHasCertificate(String host){
+		if(!this.initialized){
+			System.err.println("Keystore has not been initialized, the system cannot continue.");
+			return false;
+		}
+		
+		try {
+			return (this.systemKeystore.getCertificate(host) != null);
+		} catch (KeyStoreException e) {
+			System.err.println("There was a keystore exception, cannot check for certificate at host: " + host + ".");
+			e.printStackTrace();
+			return false;
+		}
+	}
 }
