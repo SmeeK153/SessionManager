@@ -31,7 +31,7 @@ public class Credential {
 		return json;
 	}
 	
-	protected JSONObject getOAuth1CredentialsJSON(){
+	protected JSONObject getCookieCredentialsJSON(){
 		String[] user = this.decode();
 		JSONObject json = new JSONObject();
 		json.put("username", user[0]);

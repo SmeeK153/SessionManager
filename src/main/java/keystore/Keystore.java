@@ -45,8 +45,8 @@ public class Keystore {
 	/**
 	 * Creates a keystore at the default path
 	 */
-	private static void createKeystore() {
-		Keystore.createKeystore(DEFAULT_KEYSTORE_FILE);
+	private static Boolean createKeystore() {
+		return Keystore.createKeystore(DEFAULT_KEYSTORE_FILE);
 	}
 
 	/**

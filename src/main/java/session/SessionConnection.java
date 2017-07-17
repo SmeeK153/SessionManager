@@ -19,7 +19,6 @@ import org.json.JSONObject;
 
 import core.StreamBuffer;
 import keystore.Keystore;
-import session.Session.PROTOCOL;
 
 public class SessionConnection {
 
@@ -64,31 +63,28 @@ public class SessionConnection {
 
 	private Credential credential;
 	private Keystore keystore;
-
-	private PROTOCOL authenticationProtocol = null;
 	private HttpsURLConnection connection = null;
-
 	private String responseContent;
 	private String responseError;
 	private Integer serverResponseCode;
 	private String serverResponseMessage;
 	private String cookie;
 
-	protected SessionConnection(URL url, JSONObject requestBody, JSONObject requestProperties) throws IOException {
-		this(url, requestBody, requestProperties, REQUEST_METHOD.GET, (Keystore) null);
+	protected SessionConnection(URL url, JSONObject requestBody, JSONObject requestHeaders) throws IOException {
+		this(url, requestBody, requestHeaders, REQUEST_METHOD.GET, (Keystore) null);
 	}
 
-	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestProperties, Keystore keystore)
+	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestHeaders, Keystore keystore)
 			throws IOException {
-		this(url, requestData, requestProperties, REQUEST_METHOD.GET, keystore);
+		this(url, requestData, requestHeaders, REQUEST_METHOD.GET, keystore);
 	}
 
-	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestProperties,
+	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestHeaders,
 			REQUEST_METHOD requestMethod) throws IOException {
-		this(url, requestData, requestProperties, requestMethod, (Keystore) null);
+		this(url, requestData, requestHeaders, requestMethod, (Keystore) null);
 	}
 
-	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestProperties,
+	protected SessionConnection(URL url, JSONObject requestData, JSONObject requestHeaders,
 			REQUEST_METHOD requestMethod, Keystore keystore) throws IOException {
 		System.out.println("\n");
 		
@@ -96,7 +92,7 @@ public class SessionConnection {
 		System.out.println("Established connection with: " + url.toString());
 		this.connection.setInstanceFollowRedirects(true);
 		System.out.println("Setting up automatic redirects.");
-		this.setRequestProperty(requestProperties);
+		this.setRequestProperty(requestHeaders);
 		
 		if(requestData == null){
 			this.setRequestMethod(requestMethod);
@@ -162,18 +158,18 @@ public class SessionConnection {
 	/**
 	 * Sets the request's properties from a JSON
 	 * 
-	 * @param requestProperties
+	 * @param requestHeaders
 	 *            JSONObject
 	 */
-	private void setRequestProperty(JSONObject requestProperties) {
-		if (requestProperties == null) {
+	private void setRequestProperty(JSONObject requestHeaders) {
+		if (requestHeaders == null) {
 			return;
 		}
 
-		Iterator<String> keys = requestProperties.keys();
+		Iterator<String> keys = requestHeaders.keys();
 		while (keys.hasNext()) {
 			String key = keys.next();
-			this.setRequestProperty(key, requestProperties.getString(key));
+			this.setRequestProperty(key, requestHeaders.getString(key));
 		}
 	}
 
