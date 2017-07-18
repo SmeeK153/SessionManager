@@ -17,7 +17,29 @@ import keystore.Keystore;
 import session.exception.*;
 
 public final class Session {
-
+	
+	/**
+	 * Provides access to create BasicAuthenticationProtocol object from Session directly
+	 * 
+	 * @param authorizationLocale 
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public static BasicAuthenticationProtocol BasicAuthenticationProtocol(String authorizationLocale) throws MalformedURLException {
+		return new BasicAuthenticationProtocol(authorizationLocale);
+	}
+	
+	/**
+	 * Provides access to create CookieAuthenticationProtocol object from Session directly
+	 * 
+	 * @param authorizationLocale
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public static CookieAuthenticationProtocol CookieAuthenticationProtocol(String authorizationLocale) throws MalformedURLException {
+		return new CookieAuthenticationProtocol(authorizationLocale);
+	}
+	
 	private AuthenticationProtocol authenticationProtocol = null;
 
 	public Boolean isAuthenticated() {
