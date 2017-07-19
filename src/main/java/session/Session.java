@@ -21,22 +21,42 @@ public final class Session {
 	/**
 	 * Provides access to create BasicAuthenticationProtocol object from Session directly
 	 * 
-	 * @param authorizationLocale 
-	 * @return
+	 * @param String authorization locale for authentication the Session via the protocol
+	 * @return Authorization protocol for basic-based authentication
 	 * @throws MalformedURLException
 	 */
 	public static BasicAuthenticationProtocol BasicAuthenticationProtocol(String authorizationLocale) throws MalformedURLException {
+		return Session.BasicAuthenticationProtocol(new URL(authorizationLocale));
+	}
+	
+	/**
+	 * Provides access to create BasicAuthenticationProtocol object from Session directly
+	 * 
+	 * @param String authorization locale for authentication the Session via the protocol
+	 * @return Authorization protocol for basic-based authentication
+	 */
+	public static BasicAuthenticationProtocol BasicAuthenticationProtocol(URL authorizationLocale) {
 		return new BasicAuthenticationProtocol(authorizationLocale);
 	}
 	
 	/**
 	 * Provides access to create CookieAuthenticationProtocol object from Session directly
 	 * 
-	 * @param authorizationLocale
-	 * @return
+	 * @param String authorization locale for authentication the Session via the protocol
+	 * @return Authorization protocol for cookie-based authentication
 	 * @throws MalformedURLException
 	 */
 	public static CookieAuthenticationProtocol CookieAuthenticationProtocol(String authorizationLocale) throws MalformedURLException {
+		return Session.CookieAuthenticationProtocol(new URL(authorizationLocale));
+	}
+	
+	/**
+	 * Provides access to create CookieAuthenticationProtocol object from Session directly
+	 * 
+	 * @param String authorization locale for authentication the Session via the protocol
+	 * @return Authorization protocol for cookie-based authentication
+	 */
+	public static CookieAuthenticationProtocol CookieAuthenticationProtocol(URL authorizationLocale) {
 		return new CookieAuthenticationProtocol(authorizationLocale);
 	}
 	

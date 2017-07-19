@@ -42,10 +42,6 @@ public abstract class AuthenticationProtocol {
 	protected JSONObject getAuthenticationCache() {
 		return this.authenticationCache;
 	}
-	
-	protected void authorize(URL authorizationLocale) {
-		this.authenticationLocale = authorizationLocale;
-	}
 
 	protected Boolean connectionAuthorized(URL authorizationLocale, JSONObject authorizationRequestBody,
 			JSONObject authorizationRequestHeaders) {
