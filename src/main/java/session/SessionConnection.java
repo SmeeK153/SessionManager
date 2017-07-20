@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import core.StreamBuffer;
 import keystore.Keystore;
+import session.exception.NotAuthorized401Exception;
 
 public class SessionConnection {
 
@@ -111,11 +112,22 @@ public class SessionConnection {
 			System.out.println("The request did not provide an error stream to read.");
 		}
 		this.serverResponseCode = this.connection.getResponseCode();
-		System.out.println("Retrieved server response code.");
+		System.out.println("Retrieved server response code: " + this.serverResponseCode);
 		this.serverResponseMessage = this.connection.getResponseMessage();
-		System.out.println("Retrieved server response message.");
-		this.cookie = this.connection.getHeaderField("Set-Cookie");
-		System.out.println("Retrieved request cookie.");
+		System.out.println("Retrieved server response message: " + this.serverResponseMessage);
+		switch(this.serverResponseCode) {
+		case 200:
+			this.cookie = this.connection.getHeaderField("Set-Cookie");
+			System.out.println("Retrieved request cookie.");
+			break;
+		case 401:
+			throw new NotAuthorized401Exception("Credentials were invalid.");
+		default:
+			System.err.println("Couldn't retrieve remote resource, received error code "
+					+ this.getServerResponseVerboseMessage() + ".");
+			break;
+		}
+		
 	}
 
 	/**
