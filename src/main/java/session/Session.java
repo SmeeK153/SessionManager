@@ -15,8 +15,9 @@ import org.json.JSONObject;
 import core.StreamBuffer;
 import keystore.Keystore;
 import session.exception.*;
+import session.request.ConnectionRequest;
 
-public final class Session {
+public final class Session implements HTTPConnectionHandler {
 
 	/**
 	 * Provides access to create BasicAuthenticationProtocol object from Session
@@ -103,6 +104,18 @@ public final class Session {
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Provides a simplified connection request to the desired resource. Useful for wrapping REST
+	 * calls in a more verbose manner.
+	 * 
+	 * @param method
+	 * @param url
+	 * @return
+	 */
+	public ConnectionRequest makeRequest(SessionConnection.REQUEST_METHOD method, URL url) {
+		return new ConnectionRequest(this, method, url);
 	}
 
 	// Add exceptions to throw if the connection needs authentication parameter

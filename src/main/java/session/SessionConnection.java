@@ -31,10 +31,11 @@ public class SessionConnection {
 	}
 
 	/**
-	 * Converts request method enumeration to usable string value.
+	 * Converts request method enumeration to usable string value. List of methods
+	 * specified by the RFC 7231 and RFC 5789
 	 * 
 	 * @param method
-	 * @return
+	 * @return Returns GET if there is not a valid match.
 	 */
 	private static String getRequestMethod(REQUEST_METHOD method) {
 		switch (method) {
@@ -221,7 +222,7 @@ public class SessionConnection {
 		return this.cookie;
 	}
 
-	protected Integer getServerResponseCode() {
+	public Integer getServerResponseCode() {
 		return this.serverResponseCode;
 	}
 
@@ -233,7 +234,7 @@ public class SessionConnection {
 		return this.getServerResponseCode() + " : " + this.getServerResponseMessage();
 	}
 
-	protected String getResponse() {
+	public String getResponse() {
 		return this.responseContent;
 	}
 
@@ -241,11 +242,11 @@ public class SessionConnection {
 		System.out.println(this.getResponse());
 	}
 
-	public JSONObject getJSONObjectResponse() throws IOException, JSONException {
+	public JSONObject getJSONObjectResponse() throws JSONException {
 		return new JSONObject(this.getResponse());
 	}
 
-	public JSONArray getJSONArrayResponse() throws IOException, JSONException {
+	public JSONArray getJSONArrayResponse() throws JSONException {
 		return new JSONArray(this.getResponse());
 	}
 }
