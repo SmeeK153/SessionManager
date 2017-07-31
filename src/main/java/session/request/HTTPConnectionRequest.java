@@ -1,10 +1,11 @@
-package session;
+package session.request;
 
 import java.net.URL;
 
-import session.request.ConnectionRequest;
+import session.SessionConnection;
+import session.SessionConnection.REQUEST_METHOD;
 
-public interface HTTPConnectionHandler {
+public interface HTTPConnectionRequest {
 	
 	public ConnectionRequest makeRequest(SessionConnection.REQUEST_METHOD method, URL url);
 	

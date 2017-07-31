@@ -16,8 +16,9 @@ import core.StreamBuffer;
 import keystore.Keystore;
 import session.exception.*;
 import session.request.ConnectionRequest;
+import session.request.HTTPConnectionRequest;
 
-public final class Session implements HTTPConnectionHandler {
+public final class Session implements HTTPConnectionRequest {
 
 	/**
 	 * Provides access to create BasicAuthenticationProtocol object from Session

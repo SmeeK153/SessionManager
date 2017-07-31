@@ -27,8 +27,22 @@ public class ConnectionRequest {
 		this.url = url;
 	}
 	
+	public ConnectionRequest with(String key, Object value) {
+		if(this.requestData == null) {
+			this.requestData = new JSONObject();
+		}
+		this.requestData.put(key, value);
+		return this;
+	}
+	
 	public ConnectionRequest with(JSONObject requestData) {
-		this.requestData = requestData;
+		if(this.requestData == null) {
+			this.requestData = requestData;
+		} else {
+			requestData.keySet().forEach(key -> {
+				this.requestData.put(key, requestData.get(key));
+			});
+		}
 		return this;
 	}
 	
